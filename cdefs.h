@@ -1,8 +1,5 @@
 /* cdefs.h
  *
- * This file is part of the XXX distribution (https://github.com/xxxx or http://xxx.github.io).
- * Copyright (c) 2015 Liviu Ionescu.
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -41,11 +38,6 @@
 #endif  // !defined(true) && !defined(false)
 
 // ------------------- hardware low & high states - type U1 ------------------------------
-
-//lint --emacro({9030}, lowstate)
-//lint --emacro({9030}, highstate)
-//lint --emacro({9034}, lowstate)
-//lint --emacro({9034}, highstate)
 
 #define lowstate    (U1)(0u)
 #define highstate   (U1)(1u)
