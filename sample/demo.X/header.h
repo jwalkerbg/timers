@@ -58,7 +58,6 @@ extern "C" {
 #define RTC_TICK    (100u)  // 100 x 0.1ms = 10ms
 
 // time units in rtc ticks
-#define MU_0005S (50u/RTC_TICK)     // 0.005 sec
 #define MU_001S (100u/RTC_TICK)     // 0.01 sec
 #define MU_01S  (1000u/RTC_TICK)    // 0.1 sec
 #define MU_1S   (10000u/RTC_TICK)   // 1 sec
