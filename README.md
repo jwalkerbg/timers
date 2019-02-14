@@ -2,13 +2,13 @@
 
 ## Introduction
 
-This module defines various types of timers that may be used for measuring single time intervals or for triggering events at even time intervals. Some of the the timers are more complex - they can count forward and backward and this way to participate in simulating physical processes - par example heating and cooling of an electronic unit. Most complex timers are capable to produce bursts of impulses.
+This module defines various types of timers that may be used for measuring single time intervals or for triggering events at even time intervals. Some of the timers are more complex - they can count forward and backward and this way to participate in simulating physical processes - par example heating and cooling of an electronic unit. Most complex timers are capable to produce bursts of impulses.
 
-All of the timers depend on the system real time clock (**RTC**). The **RTC** usually uses one of the microcontroller's embedded timers which is configured to make interrupts at even intervals (2.5ms to 10ms are reasonable values). The interval **RTC** ticks (the interrupts of embedded timer happen) is named **RTC_TICK**.
+All of the timers depend on the system real-time clock (**RTC**). The **RTC** usually uses one of the microcontroller's embedded timers which is configured to make interrupts at even intervals (2.5ms to 10ms are reasonable values). The interval **RTC** ticks (the interrupts of embedded timer happen) is named **RTC_TICK**.
 
-The timers can be defined with various lengths of the counters. They can measure short time intervals and in such cases they can be defined with `uint8_t` counters. For longer intervals `uint16_t` or even `uint32_t` can be used. Each timer has `DEFINE` and `EXTERN` macros that declare and define timer's variables. These macros accept as an argument an integral `unsigned` type (`uint8_t`, `uint16_t`, `uint24_t` (in **XC8**), `uint32_t` etc) that is the type of the counters. All other macros that manipulate the timers do not use a time argument. Thus, it is very easy to change the type of a timer to a shorter or longer one if needed.
+The timers can be defined with various lengths of the counters. They can measure short time intervals and in such cases, they can be defined with `uint8_t` counters. For longer intervals, `uint16_t` or even `uint32_t` can be used. Each timer has `DEFINE` and `EXTERN` macros that declare and define timer's variables. These macros accept as an argument an integral `unsigned` type (`uint8_t`, `uint16_t`, `uint24_t` (in **XC8**), `uint32_t` etc) that is the type of the counters. All other macros that manipulate the timers do not use a time argument. Thus, it is very easy to change the type of timer to a shorter or longer one if needed.
 
-The module is created and tested for usage in embedded projects with Microchip's **PIC12** and **PIC16** families. Without or with little adaptations, it may be extended to the other **PIC** families or other microcontrolers, or why not to be used in desktop applications.
+The module is created and tested for use in embedded projects with Microchip's **PIC12** and **PIC16** families. Without or with little adaptations, it may be extended to the other **PIC** families or other microcontrollers, or why not to be used in desktop applications.
 
 ## Files.
 
@@ -20,20 +20,20 @@ Any application that uses timers should include **cdefs.h** and **timedefs.h**.
 
 ## Timers, a short description.
 
-- Single pulse timer. This timer measures a single time interval and at its end it raises an `expired` flag.
+- Single pulse timer. This timer measures a single time interval and at its end, it raises an `expired` flag.
 - Continuous timer. This timer measures consecutive equal intervals and at the end of each of the intervals raises `TimerTick` flag. The interval of the timer may be changed in real time.
 - Const continuous timer. This timer measures consecutive equal intervals and at the end of each of the intervals raises `TimerTick` flag. The interval is fixed at the compile time and cannot be changed.
-- Const free continuous timer. This timer measures consecutive equal intervals and at the end of each of the intervals raises `TimerTick` flag. This timer implements constant time interval and runs always. It cannot be stopped.
-- Forward/Backward single shot timer. This timer is capable to count towards a preset value (time interval) (forward) or towards zero (backward). The direction of the counting is controlled by a one bit boolean variable that is a part of the timer. This direction may be set by the application. Example: A heat controlling application can turn the direction forward if the temperature is above given limit value or backward if the temperature is below that value.
-- Forward/Backward variable single shot timer. This timer is capable to count towards preset value (time interval) (forward) or towards zero (backward). The direction of the counting is controlled by a one bit boolean variable that is a part of the timer. This direction may be set by the application. In addition, this timer can change its counting step. An application can control the step depending on various external conditions and this way to simulate more complex physical processes.
-- Asymmetric continuous timer. This is continuous timer that can produce sequence of two intervals with different lengths. The first interval is called HIGH and the second is called LOW. This timer, if combined with a hardware output can emit a sequence with different low and high times on an output pin.
+- Const free continuous timer. This timer measures consecutive equal intervals and at the end of each of the intervals raises `TimerTick` flag. This timer implements a constant time interval and runs always. It cannot be stopped.
+- Forward/Backward single shot timer. This timer is capable to count towards a preset value (time interval) (forward) or towards zero (backward). The direction of the counting is controlled by a one-bit boolean variable that is a part of the timer. This direction may be set by the application. Example: A heat controlling application can turn the direction forward if the temperature is above the given limit value or backward if the temperature is below that value.
+- Forward/Backward variable single shot timer. This timer is capable to count towards preset value (time interval) (forward) or towards zero (backward). The direction of the counting is controlled by a one-bit boolean variable that is a part of the timer. This direction may be set by the application. In addition, this timer can change its counting step. An application can control the step depending on various external conditions and this way to simulate more complex physical processes.
+- Asymmetric continuous timer. This is a continuous timer that can produce a sequence of two intervals with different lengths. The first interval is called HIGH and the second is called LOW. This timer, if combined with a hardware output can emit a sequence with different low and high times on an output pin.
 - Asymmetric single pulse timer. This timer emits one period consisting of one LOW and one HIGH interval. It can be configured to produce LOW-HIGH or HIGH-LOW sequence. At the end of the second interval, the timer rises and `expired` flag.
-- Burst generator. This more complex timer produces bursts of given number of impulses. Each impulse have given length and there is defined interval between the adjacent impulses. A time interval is defined between the adjacent bursts too. Once configured and started it works alone and there is no need for care from the application.
-- Burst generator with output. This burst generator is equipped with an output pin and can direct bursts directly to hardware.
+- Burst generator. This more complex timer produces bursts of a given number of impulses. Each impulse has given length and there is a defined interval between the adjacent impulses. A time interval is defined between the adjacent bursts too. Once configured and started it works alone and there is no need for care from the application.
+- Burst generator with an output. This burst generator is equipped with an output pin and can direct bursts directly to hardware.
 
 ## Real Time Clock.
 
-The Real Time Clock is an application specific device (hardware and/or software). So it must be implemented in the application. It have to have defined a procedure that is called at **RTC_TICK** intervals. This procedure is usually an interrupt responding procedure for the Real Time Clock. This procedure makes the timers \'tick\' by calling their `Tick` macros. Each tick makes timer's counter to increment by one (however forward/backward variable timers may count with diffrent steps).
+The Real Time Clock is an application specific device (hardware and/or software). So it must be implemented in the application. It has to have defined a procedure that is called at **RTC_TICK** intervals. This procedure is usually an interrupt responding procedure for the Real Time Clock. This procedure makes the timers \'tick\' by calling their `Tick` macros. Each tick makes timer's counter to increment by one (however forward/backward variable timers may count with different steps).
 
 Intervals that are measured by the timers are multiples of **RTC_TICK**. The accuracy of the intervals is **1/2 RTC_TICK**. It is convenient to define several time units and this is usually done in the application header file. The example **header.h** contains such definition, assuming that **RTC_TICK** is 10ms:
 
@@ -57,16 +57,16 @@ Then setting an interval of 500ms may looks looks like `(50u*MU_001S)` or `(5u*M
 
 ## Common definitions.
 
-**Tag**. Each timer has a tag, used to refer that timer in the application. The tag is a short alpha-numeric string, preferably 1 to 3 symbols. The tag is always the first argument of the all macros associated to that kind of timer. For a given type of timer a given tag may be associated with one timer instance. However, two or more timers of different kind may share identical tags. This is possible but not preferrable becausew may lead to poor readability of the application.
+**Tag**. Each timer has a tag, used to refer that timer in the application. The tag is a short alphanumeric string, preferably 1 to 3 symbols. The tag is always the first argument of the all macros associated with that kind of timer. For a given type of timer, a given tag may be associated with a single timer instance. However, two or more timers of a different kind may share identical tags. This is possible but not preferable because may lead to poor readability of the application.
 
 **ttype**. This is the type of a timer. It must be an integral unsigned integer type with 8, 16, 24, 32 or 64 length. So in practice, valid types are `uint8_t`, `uint16_t`, `uint24_t`, `uint32_t`, `uint64_t`.
 
 **Macros**. Each timer consists of a set of C preprocessor macros. These macros are divided in several groups:
 - Declaration macros: `DEFINE` used in **.c** files and `EXTERN` used in **.h** files.
-- Variable dfinition macros: These macros define the proprietary variables assigned to a timer.
+- Variable definition macros: These macros define the proprietary variables assigned to a timer.
 - Manipulation macros: These macros are used to manipulate timers: Reset, Start, Stop, Tick etc.
 
-The macros are described in following sections.
+The macros are described in the following sections.
 
 ## Single Pulse Timer.
 
