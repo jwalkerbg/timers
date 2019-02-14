@@ -76,7 +76,7 @@ This timer measures a single interval and at its end it raises an `expired` flag
 
 | Macro | Description |
 | --- | --- |
-| `DEFINE_SINGLE_PULSE_TIMER(tag,ttype)` | Declare single pulse timer in **.c** file by declaring its variables. `tag` is the tag of the timer, and `ttype` is its type. |
+| `DEFINE_SINGLE_PULSE_TIMER(tag,ttype)` | Declare a single pulse timer in **.c** file by declaring its variables. `tag` is the tag of the timer, and `ttype` is its type. |
 | `EXTERN_SINGLE_PULSE_TIMER(x,ttype)` | Define external definitions in **.h** file. `tag` is the tag of the timer, and `ttype` is its type. |
 
 ### Variables.
@@ -101,3 +101,27 @@ This timer measures a single interval and at its end it raises an `expired` flag
 | `ClearSinglePulseTimerExpired(tag)` | This macro clears `SinglePulseTimerExpired(tag)`. It is used by the application when it sees risen `SinglePulseTimerExpired(tag)` before performing some actions upon the end of the interval `per`. |
 | `TickSinglePulseTimer(tag)` | This macro decrements by one `ShortElapsingTimerCounter(tag)`. If the counter becomes zero, the macro clears `SinglePulseTimerFlag(tag)` and rises `SinglePulseTimerExpired(tag)`. This way the macro indicates the end of the interval `per`. The macro does not touch stopped and suspended timers because they have `SinglePulseTimerFlag(tag)` cleared. |
 
+## Continuous Timer.
+
+This timer measures consecutive equal intervals and at the end of each of the intervals raises `TimerTick` flag. So it is capable to trigger periodic events in a embedded system.
+
+### Declaration.
+
+| Macro | Description |
+| --- | --- |
+| DEFINE_CONTINUOUS_TIMER(tag,ttype) | Declare a continuous timer in **.c** file by declaring its variables. `tag` is the tag of the timer, and `ttype` is its type. |
+| EXTERN_CONTINUOUS_TIMER(tag,ttype) | Define external definitions in **.h** file. `tag` is the tag of the timer, and `ttype` is its type. |
+
+### Variables.
+
+| Variable | Description |
+| --- | --- |
+| ContinuousTimerCounter(tag) | Counter of type `ttype`. Can be used as `lvalue`. Direct access to this variable is not recomended. |
+| ContinuousTimerSetting(tag) | Period of the timer.  Can be used as `lvalue`. It is used to load ContinuousTimerCounter(x) at the end of current interval. |
+| ContinuousTimerFlag(tag) | When `true`, this flag indicates active, working timer. When `false` the flag indicates a stopped timer. |
+| ContinuousTimerTick(tag) | This flag, when `true` indicates that an interval with period of `ContinuousTimerSetting(tag)` has expired. When the appication see this flag risen, it should clear it by calling `ClearContinuousTimerTick(tag)` and eventually execute some periodic actions. |
+
+### Manipulation macros.
+
+| Macro | Description |
+| --- | --- |
