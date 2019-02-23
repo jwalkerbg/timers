@@ -119,9 +119,17 @@ This timer measures consecutive equal intervals and at the end of each of the in
 | ContinuousTimerCounter(tag) | Counter of type `ttype`. Can be used as `lvalue`. Direct access to this variable is not recomended. |
 | ContinuousTimerSetting(tag) | Period of the timer.  Can be used as `lvalue`. It is used to load ContinuousTimerCounter(x) at the end of current interval. |
 | ContinuousTimerFlag(tag) | When `true`, this flag indicates active, working timer. When `false` the flag indicates a stopped timer. |
-| ContinuousTimerTick(tag) | This flag, when `true` indicates that an interval with period of `ContinuousTimerSetting(tag)` has expired. When the appication see this flag risen, it should clear it by calling `ClearContinuousTimerTick(tag)` and eventually execute some periodic actions. |
+| ContinuousTimerTick(tag) | This flag, when `true` indicates that an interval with period of `ContinuousTimerSetting(tag)` has expired. When an appication sees this flag risen, it should clear it by calling `ClearContinuousTimerTick(tag)` and eventually execute some periodic actions. |
 
 ### Manipulation macros.
 
 | Macro | Description |
 | --- | --- |
+| `SetContinuousTimer(tag,per)` | This macro activates a timer with tag `tag` to measure intervals `per`. `per` must be an expression of the same type that was used in `DEFINE` and `EXTERN` macros. `ContinuousTimerFlag(tag)` is set to `true`, `ContinuousTimerTick(tag)` is set to `false`. `ContinuousTimerSetting(tag)` and `ContinuousTimerCounter(tag)` to `per`. The macro disables the interrupts at the beginning and enables them at the end. |
+| `SetContinuousTimer(tag,per)` | This macro activates a timer with tag `tag` to measure intervals `per`. `per` must be an expression of the same type that was used in `DEFINE` and `EXTERN` macros. `ContinuousTimerFlag(tag)` is set to `true`, `ContinuousTimerTick(tag)` is set to `false`. `ContinuousTimerSetting(tag)` and `ContinuousTimerCounter(tag)` to `per`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
+| `StopContinuousTimer(tag)` | This macro stops a timer with tag `tag`. It simply clears both `ContinuousTimerFlag(tag)` and `ContinuousTimerTick(tag)`. The macro disables the interrupts at the beginning and enables them at the end of the macro execution. |
+| `ResetContinuousTimer(tag)` | This macro stops a timer with tag `tag`. It simply clears both `ContinuousTimerFlag(tag)` and `ContinuousTimerTick(tag)`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
+| `ClearContinuousTimer(tag)` | This macro clears all variables associated with a timer with tag `tag`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. Note: Normally, this macro is not much useful. It exists for history purposes. |
+| `SuspendContinuousTimer(tag)` | This macros suspends a timer with tag `tag` while keeping the values of the counter and the setting. |
+| `ResumeContinuousTimer(tag)` | This macro resumes a timer that was previously suspended. |
+| `TickContinuousTimer(tag)` | This macro decrements by one `ContinuousTimerCounter(tag)`. If the counter becomes zero, the macro raises `ContinuousTimerTick(tag)` and sets `ContinuousTimerCounter(tag)` to `ContinuousTimerSetting(tag)`. |
