@@ -103,7 +103,7 @@ This timer measures a single interval and at its end it raises an `expired` flag
 
 ## Continuous Timer.
 
-This timer measures consecutive equal intervals and at the end of each of the intervals raises `TimerTick` flag. So it is capable to trigger periodic events in a embedded system.
+This timer measures consecutive equal intervals and at the end of each of the intervals raises `TimerTick` flag. So it is capable to trigger periodic events in an embedded system.
 
 ### Declaration.
 
@@ -116,10 +116,10 @@ This timer measures consecutive equal intervals and at the end of each of the in
 
 | Variable | Description |
 | --- | --- |
-| ContinuousTimerCounter(tag) | Counter of type `ttype`. Can be used as `lvalue`. Direct access to this variable is not recomended. |
-| ContinuousTimerSetting(tag) | Period of the timer.  Can be used as `lvalue`. It is used to load ContinuousTimerCounter(x) at the end of current interval. |
+| ContinuousTimerCounter(tag) | Counter of type `ttype`. Can be used as `lvalue`. Direct access to this variable is not recommended. |
+| ContinuousTimerSetting(tag) | Period of the timer.  Can be used as `lvalue`. It is used to load ContinuousTimerCounter(x) at the end of the current interval. |
 | ContinuousTimerFlag(tag) | When `true`, this flag indicates active, working timer. When `false` the flag indicates a stopped timer. |
-| ContinuousTimerTick(tag) | This flag, when `true` indicates that an interval with period of `ContinuousTimerSetting(tag)` has expired. When an appication sees this flag risen, it should clear it by calling `ClearContinuousTimerTick(tag)` and eventually execute some periodic actions. |
+| ContinuousTimerTick(tag) | This flag, when `true` indicates that an interval with period of `ContinuousTimerSetting(tag)` has expired. When an application sees this flag risen, it should clear it by calling `ClearContinuousTimerTick(tag)` and eventually execute some periodic actions. |
 
 ### Manipulation macros.
 
