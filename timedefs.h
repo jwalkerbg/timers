@@ -183,31 +183,31 @@
     EnableInterrupts(); \
 }
 // start when interrupts are disabled
-#define SetConstContinuosTimerI(x,per) { \
+#define SetConstContinuousTimerI(x,per) { \
     CCT_Counter_##x = (per); \
     CCT_Flag_##x = true; \
     CCT_Tick_##x = false; \
 }
 // stop when interrupts are enabled
-#define StopConstContinuosTimer(x) { \
+#define StopConstContinuousTimer(x) { \
     DisableInterrupts(); \
     CCT_Flag_##x = false; \
     CCT_Tick_##x = false; \
     EnableInterrupts(); \
 }
 // timer reset when interrupts are disabled
-#define ResetConstContinuosTimer(x) { \
+#define ResetConstContinuousTimer(x) { \
     CCT_Flag_##x = false; \
     CCT_Tick_##x = false; \
 }
 // clear timer
-#define ClearConstContinuosTimer(x) { \
+#define ClearConstContinuousTimer(x) { \
     CCT_Flag_##x = false; \
     CCT_Tick_##x = false; \
     CCT_Counter_##x = 0u; \
 }
 // pause (suspend)
-#define SuspendContinuosTimer(x) { \
+#define SuspendConstContinuousTimer(x) { \
     DisableInterrupts(); \
     CCT_Flag_##x = false; \
     EnableInterrupts(); \
