@@ -145,6 +145,8 @@ This timer measures consecutive equal intervals and at the end of each of the in
 | `DEFINE_CONST_CONTINUOUS_TIMER(tag,ttype)` | Declare a constant continuous timer in **.c** file by declaring its variables. `tag` is the tag of the timer, and `ttype` is its type. |
 | `EXTERN_CONST_CONTINUOUS_TIMER(x,ttype)` | Define external definitions in **.h** file. `tag` is the tag of the timer, and `ttype` is its type. |
 
+### Variables.
+
 
 | Variable | Description |
 | --- | --- |
@@ -156,7 +158,7 @@ As we can see this timer does not have `Setting` variable, because it is constan
 
 | Macro | Description |
 | --- | --- |
-| `SetConstFreeContinuousTimer(tag,per)` | This macro activates a timer with tag `tag` to measure intervals `per`. `per` must be an expression of the same type that was used in `DEFINE` and `EXTERN` macros. `ConstContinuousTimerFlag(tag)` is set to `true`, `ConstContinuousTimerTick(tag)` is set to `false`. `ConstContinuousCounter(tag)` is set to `per`. The macro disables the interrupts at the beginning and enables them at the end. |
+| `SetConstContinuousTimer(tag,per)` | This macro activates a timer with tag `tag` to measure intervals `per`. `per` must be an expression of the same type that was used in `DEFINE` and `EXTERN` macros. `ConstContinuousTimerFlag(tag)` is set to `true`, `ConstContinuousTimerTick(tag)` is set to `false`. `ConstContinuousCounter(tag)` is set to `per`. The macro disables the interrupts at the beginning and enables them at the end. |
 | `SetConstFreeContinuousTimerI(tag,per)` | This macro activates a timer with tag `tag` to measure intervals `per`. `per` must be an expression of the same type that was used in `DEFINE` and `EXTERN` macros. `ConstContinuousTimerFlag(tag)` is set to `true`, `ConstContinuousTimerTick(tag)` is set to `false`. `ConstContinuousCounter(tag)` is set to `per`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
 | `StopConstContinuosTimer(tag)` | This macro stops a timer with tag `tag`. It simply clears both `ConstContinuousTimerFlag(tag)` and `ConstContinuousTimerTick(tag)`. The macro disables the interrupts at the beginning and enables them at the end of the macro execution. |
 | `ResetConstContinuousTimer(tag)` | This macro stops a timer with tag `tag`. It simply clears both `ConstContinuousTimerFlag(tag)` and `ConstContinuousTimerTick(tag)`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
@@ -164,3 +166,33 @@ As we can see this timer does not have `Setting` variable, because it is constan
 | `SuspendConstContinuousTimer(tag)` | This macros suspends a timer with tag `tag` while keeping the value of the counter. |
 | `ResumeConstContinuousTimer(tag)` |  This macro resumes a timer that was previously suspended. |
 | `TickConstContinuousTimer(tag,per)` | This macro decrements by one `ConstContinuousCounter(tag)`. If the counter becomes zero, the macro raises `ConstContinuousTimerTick(tag)` and sets `ContinuousTimerCounter(tag)` to `per`. It is common `per` to be a constant expression. However, if `per` is a variable, then this timer is converted to a normal continuous timer. |
+
+## Const Free Continuous Timer.
+
+This timer measures consecutive equal intervals and at the end of each of the intervals raises `TimerTick` flag. So it is capable to trigger periodic events in an embedded system. This timer cannot change its interval (easily) and cannot be stopped.
+
+### Declaration.
+
+| Macro | Description |
+| --- | --- |
+| `DEFINE_CONST_FREE_CONTINUOUS_TIMER(tag,ttype)` | Declare a constant free continuous timer in **.c** file by declaring its variables. `tag` is the tag of the timer, and `ttype` is its type. |
+| `EXTERN_CONST_FREE_CONTINUOUS_TIMER(x,ttype)` | Define external definitions in **.h** file. `tag` is the tag of the timer, and `ttype` is its type. |
+
+### Variables.
+
+| Variable | Description |
+| --- | --- |
+| `ConstFreeContinuousTimerCounter(tag)` | Counter of type `ttype`. Can be used as `lvalue`. Direct access to this variable is not recommended. |
+| `ConstFreeContinuousTimerTick(x)` | This flag, when `true` indicates that an interval has expired. When an application sees this flag risen, it should clear it by calling `ClearConstFreeContinuousTick(tag)` and eventually execute some periodic actions. |
+
+As we can see this timer does not have `Setting` variable, because it is a constant timer. See `TickConstContinuousTimer(tag,per)` about initializing next interval. Also, it has not `Flag` because it runs always and cannot be stopped.
+
+### Manipulation macros.
+
+| Macro | Description |
+| --- | --- |
+| `SetConstFreeContinuousTimer(tag,per)` | This macro initialize a timer with tag `tag` with a full period `per`. Currently measured period is precluded. `per` must be an expression of the same type that was used in `DEFINE` and `EXTERN` macros. `ConstFreeContinuousTimerTick(tag)` is set to `false`. must be an expression of the same type that was used in `DEFINE` and `EXTERN` macros. `ConstContinuousTimerFlag(tag)` is set to `true`, `ConstContinuousTimerTick(tag)` is set to `false`. `ConstFreeContinuousCounter(tag)` is set to `per`. The macro disables the interrupts at the beginning and enables them at the end. |
+| `SetConstFreeContinuousTimerI(tag,per)` | This macro initialize a timer with tag `tag` with a full period `per`. Currently measured period is precluded. `per` must be an expression of the same type that was used in `DEFINE` and `EXTERN` macros. `ConstFreeContinuousTimerTick(tag)` is set to `false`. must be an expression of the same type that was used in `DEFINE` and `EXTERN` macros. `ConstContinuousTimerFlag(tag)` is set to `true`, `ConstContinuousTimerTick(tag)` is set to `false`. `ConstFreeContinuousCounter(tag)` is set to `per`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
+| `ResetConstFreeContinuousTimer(tag,per)` | This macro currently is synonim of `SetConstFreeContinuousTimerI(tag,per)` |
+| `ClearConstFreeContinuousTimer(tag,per)` | This macro currently is synonim of `SetConstFreeContinuousTimerI(tag,per)` |
+| `TickConstFreeContinuousTimer(tag,per)` | his macro decrements by one `ConstFreeContinuousCounter(tag)`. If the counter becomes zero, the macro raises `ConstContinuousTimerTick(tag)` and sets `ContinuousTimerCounter(tag)` to `per`. It is common `per` to be a constant expression. However, if `per` is a variable, then this timer is effectively converted to a normal continuous timer. |
