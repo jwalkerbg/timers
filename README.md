@@ -277,8 +277,8 @@ An application may manipulate forward and backward steps depending on some exter
 | --- | --- |
 | `SetFBVSinglePulseTimer(tag,per,stepF,stepB,direction)` | This macro activates a timer with tag `tag`. It sets the setting, the steps and the direction. The counter is set to zero. The macro disables the interrupts at the beginning and enables them at the end. |
 | `SetFBVSinglePulseTimerI(tag,per,stepF,stepB,direction)` | This macro activates a timer with tag `tag`. It sets the setting, the steps and the direction. The counter is set to zero. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
-| `StopFBVSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It simply clears both |
-| `ResetFBVSinglePulseTimer(tag)` | `FBVSinglePulseTimerFlag(tag)` and `FBVSinglePulseTimerExpired(tag)`. The macro disables the interrupts at the beginning and enables them at the end of its execution. |
+| `StopFBVSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It simply clears both flags `FBVSinglePulseTimerFlag(tag)` and `FBVSinglePulseTimerExpired(tag)`. |
+| `ResetFBVSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It simply clears both flags `FBVSinglePulseTimerFlag(tag)` and `FBVSinglePulseTimerExpired(tag)`. The macro disables the interrupts at the beginning and enables them at the end of its execution. |
 | `ClearFBVSinglePulseTimer(tag)` | This macro clears the variables of a timer with tag `tag`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
 | `ClearFBVSinglePulseTimerExpired(tag)` | This macro clears `FBVSinglePulseTimerExpired(tag)`. |
 | `SetFBVSinglePulseTimerDirection(tag,d)` | This macro changes the direction of counting. |
