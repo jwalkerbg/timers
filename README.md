@@ -219,8 +219,8 @@ FB timers act as integrating circuits - they charge linearly a capacitor in `FB_
 | Variable | Description |
 | --- | --- |
 | `FBSinglePulseTimerSetting(tag)` | Setting of the timer. It can be used as `lvalue`. This variable hold the value to which timer counters forward. |
-| `FBSinglePulseTimerCounter(tag)` | Counter of type `ttype`. it can be used as `lvalue`. Direct access to this variable is not recommended. |
-| `FBSinglePulseTimerDirection(tag)` | This variable accepts one of the two values `FB_BACKWARD` and `FB_FOREWARD`. It can be used as `lvalue`. It determines the direction of the timer. Direct access to this variable is not recommended. |
+| `FBSinglePulseTimerCounter(tag)` | Counter of type `ttype`. It can be used as `lvalue`. Direct access to this variable is not recommended. |
+| `FBSinglePulseTimerDirection(tag)` | This variable accepts one of the two values `FBS_BACKWARD` and `FBS_FORWARD`. It can be used as `lvalue`. It determines the direction of the timer. Direct access to this variable is not recommended. |
 | `FBSinglePulseTimerFlag(tag)` | When `true`, this flag indicates active, working timer. When `false` the flag indicates a stopped timer. |
 | `FBSinglePulseTimerExpired(tag)` | When `true`, the flag indicates that the time interval has expired. When `false` the flag indicates that the time interval is not expired or the timer is not started at all. It can be used as `lvalue`. |
 
@@ -228,8 +228,8 @@ FB timers act as integrating circuits - they charge linearly a capacitor in `FB_
 
 | Macro | Description |
 | --- | --- |
-| `SetFBSinglePulseTimer(tag,per,direction)` | This macro activates a timer with tag `tag`, sets `FBSinglePulseTimerSetting(tag)` to `per` and `FBSinglePulseTimerDirection(tag)` to `direction`. ` and `EXTERN` macros. `ContinuousTimerFlag(tag)` is set to `true`, `ContinuousTimerTick(tag)` is set to `false`. `ContinuousTimerSetting(tag)` and `ContinuousTimerCounter(tag)` to `per`. The macro disables the interrupts at the beginning and enables them at the end. |
-| `SetFBSinglePulseTimerI(tag,per,direction)` | This macro activates a timer with tag `tag`, sets `FBSinglePulseTimerSetting(tag)` to `per` and `FBSinglePulseTimerDirection(tag)` to `direction`. ` and `EXTERN` macros. `ContinuousTimerFlag(tag)` is set to `true`, `ContinuousTimerTick(tag)` is set to `false`. `ContinuousTimerSetting(tag)` and `ContinuousTimerCounter(tag)` to `per`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
+| `SetFBSinglePulseTimer(tag,per,direction)` | This macro activates a timer with tag `tag`, sets `FBSinglePulseTimerSetting(tag)` to `per` and `FBSinglePulseTimerDirection(tag)` to `direction`. The macro disables the interrupts at the beginning and enables them at the end. |
+| `SetFBSinglePulseTimerI(tag,per,direction)` | This macro activates a timer with tag `tag`, sets `FBSinglePulseTimerSetting(tag)` to `per` and `FBSinglePulseTimerDirection(tag)` to `direction`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
 | `StopFBSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It simply clears both `FBSinglePulseTimerFlag(tag)` and `FBSinglePulseTimerExpired(tag)`. The macro disables the interrupts at the beginning and enables them at the end of its execution. |
 | `ResetFBSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It simply clears both `FBSinglePulseTimerFlag(tag)` and `FBSinglePulseTimerExpired(tag)`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
 | `ClearFBSinglePulseTimer(tag)` | This macro clears the variables of a timer with tag `tag`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
@@ -237,3 +237,52 @@ FB timers act as integrating circuits - they charge linearly a capacitor in `FB_
 | `ChangeFBSinglePulseSetting(tag,per)` | This macro changes the setting `FBSinglePulseTimerSetting(tag)`. If `FBSinglePulseTimerCounter(tag)` >= `FBSinglePulseTimerSetting(tag)` the timer is stopped and `FBSinglePulseTimerExpired(tag)` is risen. |
 | `SetFBSinglePulseTimerDirection(tag,d)` | This macro changes the direction of counting. |
 | `TickFBSinglePulseTimer(tag)` | This macro executes increments or decrements `FBSinglePulseTimerCounter(tag)` depending on `FBSinglePulseTimerDirection(tag)`. If counting forward, if after incrementing `FBSinglePulseTimerCounter(tag)` becomes equal ot greater than `FBSinglePulseTimerSetting(tag)` the timer is stopped and `FBSinglePulseTimerExpired(tag)` is risen. if counting backward, the counter is not decremented below zero. |
+
+## Forward Backward Variable Single Pulse Timer
+
+Forward/Backward Variable (in short FBV) timers are capable to count forward to a preset value or backward to zero. The direction is determined by a `Direction` binary flag. It can be in one of the two states `FBS_FORWARD` and `FBS_BACKWARD`. The flag is controlled by the application - the application decides when the timer to count forward or backward.
+
+While counting forward, when the timer's counter reaches the preset setting the timer's `Expired` flag is raised and the timer is stopped.
+
+FBV timers have two variables that define steps for forward and for backward counting. This way it is possible to have different steps for the opposite directions.
+
+While counting backward, when the timer's counter reaches zero it stays here (does not make integer overflow).
+
+FB timers act as integrating circuits - they charge linearly a capacitor in `FB_FORWARD` mode and discharge linearly in `FB_BACKWARD` mode. The `Setting` value acts as a comparator's threshold. When the counter reaches the threshold the comparator toggles an `Expired` flag. FB timers can be used in algorithms implementing temperature protection.
+
+An application may manipulate forward and backward steps depending on some external conditions. Par example if an FBV timer is used in temperature protection of a device, its forward step may be set bigger when the temperature is bigger. This way the timer will expire faster and will prevent the device from heat damage. Similarly, the backward step may simulate cooling.
+
+### Declaration.
+
+| Macro | Description |
+| --- | --- |
+| `DEFINE_FBVSINGLE_PULSE_TIMER(tag,ttype)` | Declare a FBV timer in **.c** file by decalring its variables. `tag` is the tag of the timer, and `ttype` is its type. |
+| `EXTERN_FBVSINGLE_PULSE_TIMER(tag,ttype)` | Define external definitions in **.h** file. `tag` is the tag of the timer, and `ttype` is its type. |
+
+### Variables.
+
+| Variable | Description |
+| --- | --- |
+| `FBVSinglePulseTimerSetting(tag)` | Setting of the timer of type `ttype`. It can be used as `lvalue`. This variable hold the value to which timer counters forward. |
+| `FBVSinglePulseTimerCounter(tag)` | Counter of type `ttype`. It can be used as `lvalue`. Direct access to this variable is not recommended. |
+| `FBVSinglePulseTimerStepF(tag)` | This variable accepts one of the two values `FBS_BACKWARD` and `FBS_FORWARD`. It can be used as `lvalue`. It determines the direction of the timer. Direct access to this variable is not recommended. |
+| `FBVSinglePulseTimerStepB(tag` | Forward step of type `ttype`. |
+| `FBVSinglePulseTimerDirection(tag)` | Backward step of type `ttype`. |
+| `FBVSinglePulseTimerFlag(tag)` | When `true`, this flag indicates active, working timer. When `false` the flag indicates a stopped timer. |
+| `FBVSinglePulseTimerExpired(tag)` | When `true`, the flag indicates that the time interval has expired. When `false` the flag indicates that the time interval is not expired or the timer is not started at all. It can be used as `lvalue`. |
+
+### Manipulation macros.
+
+| Macro | Description |
+| --- | --- |
+| `SetFBVSinglePulseTimer(tag,per,stepF,stepB,direction)` | This macro activates a timer with tag `tag`. It sets the setting, the steps and the direction. The counter is set to zero. The macro disables the interrupts at the beginning and enables them at the end. |
+| `SetFBVSinglePulseTimerI(tag,per,stepF,stepB,direction)` | This macro activates a timer with tag `tag`. It sets the setting, the steps and the direction. The counter is set to zero. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
+| `StopFBVSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It simply clears both |
+| `ResetFBVSinglePulseTimer(tag)` | `FBVSinglePulseTimerFlag(tag)` and `FBVSinglePulseTimerExpired(tag)`. The macro disables the interrupts at the beginning and enables them at the end of its execution. |
+| `ClearFBVSinglePulseTimer(tag)` | This macro clears the variables of a timer with tag `tag`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
+| `ClearFBVSinglePulseTimerExpired(tag)` | This macro clears `FBVSinglePulseTimerExpired(tag)`. |
+| `SetFBVSinglePulseTimerDirection(tag,d)` | This macro changes the direction of counting. |
+| `ChangeFBVSinglePulseTimerSetting(tag,per)` | This macro changes the setting `FBVSinglePulseTimerSetting(tag)`. If `FBVSinglePulseTimerCounter(tag)` >= `FBVSinglePulseTimerSetting(tag)` the timer is stopped and `FBVSinglePulseTimerExpired(tag)` is risen. |
+| `SetFBVSinglePulseTimerStepF(tag,stepF)` | This macro changes the forward step. |
+| `SetFBVSinglePulseTimerStepB(tag,stepB)` | This macro changes the backward step. |
+| `TickFBVSinglePulseTimer(tag)` | This macro executes increments or decrements `FBSinglePulseTimerCounter(tag)` depending on `FBSinglePulseTimerDirection(tag)`. If counting forward, if after incrementing `FBSinglePulseTimerCounter(tag)` becomes equal ot greater than `FBVSinglePulseTimerSetting(tag)` the timer is stopped and `FBVSinglePulseTimerExpired(tag)` is risen. If counting backward, the counter is not decremented below zero. |
