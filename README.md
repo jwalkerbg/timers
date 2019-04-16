@@ -99,7 +99,7 @@ This timer measures a single interval and at its end it raises an `expired` flag
 | `SuspendSinglePulseTimer(tag)` | This macro suspends a timer with tag `tag` but keeps its counter no altered. The application may interrupt counting for a while. This macro is rarely used. |
 | `ResumeSinglePulseTimer(tag)` | This macro resumes a previously suspended timer. Potentially dangerous macro if called with not a started timer and with zeroed variables. This macro is rarely used. |
 | `ClearSinglePulseTimerExpired(tag)` | This macro clears `SinglePulseTimerExpired(tag)`. It is used by the application when it sees risen `SinglePulseTimerExpired(tag)` before performing some actions upon the end of the interval `per`. |
-| `TickSinglePulseTimer(tag)` | This macro decrements by one `ShortElapsingTimerCounter(tag)`. If the counter becomes zero, the macro clears `SinglePulseTimerFlag(tag)` and rises `SinglePulseTimerExpired(tag)`. This way the macro indicates the end of the interval `per`. The macro does not touch stopped and suspended timers because they have `SinglePulseTimerFlag(tag)` cleared. |
+| `TickSinglePulseTimer(tag)` | This macro decrements by one `SinglePulseTimerCounter(tag)`. If the counter becomes zero, the macro clears `SinglePulseTimerFlag(tag)` and rises `SinglePulseTimerExpired(tag)`. This way the macro indicates the end of the interval `per`. The macro does not touch stopped and suspended timers because they have `SinglePulseTimerFlag(tag)` cleared. |
 
 ## Continuous Timer.
 
@@ -286,3 +286,54 @@ An application may manipulate forward and backward steps depending on some exter
 | `SetFBVSinglePulseTimerStepF(tag,stepF)` | This macro changes the forward step. |
 | `SetFBVSinglePulseTimerStepB(tag,stepB)` | This macro changes the backward step. |
 | `TickFBVSinglePulseTimer(tag)` | This macro executes increments or decrements `FBSinglePulseTimerCounter(tag)` depending on `FBSinglePulseTimerDirection(tag)`. If counting forward, if after incrementing `FBSinglePulseTimerCounter(tag)` becomes equal ot greater than `FBVSinglePulseTimerSetting(tag)` the timer is stopped and `FBVSinglePulseTimerExpired(tag)` is risen. If counting backward, the counter is not decremented below zero. |
+
+## Asymmetric Single Pulse Timer
+
+The Asymmetric Single Pulse Timer produces a signal consisting of one highstate semiperiod and one lowstate semiperiod or one lowstate semiperiod and one highstate semiperiod. At the end of the first semiperiod, it raises an `AsymmetricSinglePulseTimerSemiperiodExpired` flag and at the end of the second semiperiod it raises `AsymmetricSinglePulseTimerExpired` flag.
+
+This timer can be used to make easier to implement some logic constructions, where a time interval should start after an initial delay or `AsymmetricSinglePulseTimerExpired` should be raised after some delay after the time interval has finished. These tasks can be solved using regular Single Shot timers however they require additional logic from the application.
+
+The two variants of the output are:
+
+             +--------+
+      first  | second |
+    +--------+        +
+             ^ AsymmetricSinglePulseTimerSemiperiodExpired(tag) raised here
+
+or
+
+    +--------+
+    | first  | second
+    +        +--------+
+                      ^ AsymmetricSinglePulseTimerExpired(tag) raised here
+
+### Declaration.
+
+| Macro | Description |
+| --- | --- |
+| `DEFINE_ASYMMETRIC_SINGLE_PULSE_TIMER(tag,ttype)` | Declare a ASPT timer in **.c** file by decalring its variables. `tag` is the tag of the timer, and `ttype` is its type. |
+| `EXTERN_ASYMMETRIC_SINGLE_PULSE_TIMER(tag,ttype)` | Define external definitions in **.h** file. `tag` is the tag of the timer, and `ttype` is its type. |
+
+### Variables.
+
+| Variable | Description |
+| --- | --- |
+| `AsymmetricSinglePulseTimerSettingFirst(tag)` | Setting of the first semiperiod. It can be used as `lvalue`. |
+| `AsymmetricSinglePulseTimerSettingSecond(tag)` | Setting of the second semiperiod. It can be used as `lvalue`. |
+| `AsymmetricSinglePulseTimerCounter(tag)` | Counter of the timer. It is not good idea to access this avriable directly. |
+| `AsymmetricSinglePulseTimerFlag(tag)` | This flag, when `true`, indicates active, working timer. When `false` the flag indicates a stopped timer. |
+| `AsymmetricSinglePulseTimerSemiperiod(tag)` | This variable indicates which semiperiod is measured at the moment. `false` means first and `true` means second one. |
+| `AsymmetricSinglePulseTimerState(tag)` | This variable holds the state of the timer output - `lowstate` or `highstate`. |
+| `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` | This flag is raised when the first semiperiod has expired. |
+| `AsymmetricSinglePulseTimerExpired(tag)` | This flag is raised when the second semiperiod has expired. |
+
+### Manipulation macros.
+
+| Macro | Description |
+| --- | --- |
+| `SetAsymmetricSinglePulseTimer(tag,first,second,istate)` | This macro starts a timer with tag `tag`. The arguments `first` and `second` are the times for the first and second interval. `istate` is the initial state - `lowstate` or `highstate`. It is possible one of the two times to be zero. Then this timer acts similarly to the Single Pulse timers. If `first` is zero, then `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` is raised and `AsymmetricSinglePulseTimerState(tag)` is set to `!istate`. The macro disables the interrupts and enables them at the end. |
+| `SetAsymmetricSinglePulseTimerI(tag,first,second,istate)` | This macro starts a timer with tag `tag`. The arguments `first` and `second` are the times for the first and second interval. `istate` is the initial state - `ASPT_STATE_HIGH` or `ASPT_STATE_LOW`. It is possible one of the two times to be zero. Then this timer acts similarly to the Single Pulse timers. If `first` is zero, then `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` is raised and `AsymmetricSinglePulseTimerState(tag)` is set to `!istate`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
+| `StopAsymmetricSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It clears `AsymmetricSinglePulseTimerState(tag)`, `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` and `AsymmetricSinglePulseTimerExpired(tag)'. Also, it sets `AsymmetricSinglePulseTimerState(tag)` to `ASPT_STATE_LOW` and `AsymmetricSinglePulseTimerSemiperiod(tag)` to `false`. This macro disables the interrupts and enables them at the end. |
+| `ResetAsymmetricSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It clears `AsymmetricSinglePulseTimerState(tag)`, `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` and `AsymmetricSinglePulseTimerExpired(tag)'. Also, it sets `AsymmetricSinglePulseTimerState(tag)` to `ASPT_STATE_LOW` and `AsymmetricSinglePulseTimerSemiperiod(tag)` to `false`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
+| `ClearAsymmetricSinglePulseTimer(tag)` | This macro clears all variable of the timer. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
+| `TickAsymmetricSinglePulseTimer(tag)` | This macro decrements by one `AsymmetricSinglePulseTimerCounter(tag)`. When the counter becomes zero, the current semiriod is finished. If this was the first semiperiod, `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` is raised and the counter is loaded it `AsymmetricSinglePulseTimerSettingSecond(tag)`.  If the second period has finised, then `AsymmetricSinglePulseTimerExpired(tag)` is raised and the timer is stopped by clearing `StopAsymmetricSinglePulseTimer(tag)`. |
