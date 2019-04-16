@@ -323,7 +323,7 @@ or
 | `AsymmetricSinglePulseTimerCounter(tag)` | Counter of the timer. It is not good idea to access this avriable directly. |
 | `AsymmetricSinglePulseTimerFlag(tag)` | This flag, when `true`, indicates active, working timer. When `false` the flag indicates a stopped timer. |
 | `AsymmetricSinglePulseTimerSemiperiod(tag)` | This variable indicates which semiperiod is measured at the moment. `false` means first and `true` means second one. |
-| `AsymmetricSinglePulseTimerState(tag)` | This variable holds the state of the timer output - `lowstate` or `highstate`. |
+| `AsymmetricSinglePulseTimerState(tag)` | This variable holds the state of the timer output - `ASPT_STATE_LOW` or `ASPT_STATE_LOW`. |
 | `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` | This flag is raised when the first semiperiod has expired. |
 | `AsymmetricSinglePulseTimerExpired(tag)` | This flag is raised when the second semiperiod has expired. |
 
@@ -333,7 +333,74 @@ or
 | --- | --- |
 | `SetAsymmetricSinglePulseTimer(tag,first,second,istate)` | This macro starts a timer with tag `tag`. The arguments `first` and `second` are the times for the first and second interval. `istate` is the initial state - `lowstate` or `highstate`. It is possible one of the two times to be zero. Then this timer acts similarly to the Single Pulse timers. If `first` is zero, then `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` is raised and `AsymmetricSinglePulseTimerState(tag)` is set to `!istate`. The macro disables the interrupts and enables them at the end. |
 | `SetAsymmetricSinglePulseTimerI(tag,first,second,istate)` | This macro starts a timer with tag `tag`. The arguments `first` and `second` are the times for the first and second interval. `istate` is the initial state - `ASPT_STATE_HIGH` or `ASPT_STATE_LOW`. It is possible one of the two times to be zero. Then this timer acts similarly to the Single Pulse timers. If `first` is zero, then `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` is raised and `AsymmetricSinglePulseTimerState(tag)` is set to `!istate`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
-| `StopAsymmetricSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It clears `AsymmetricSinglePulseTimerState(tag)`, `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` and `AsymmetricSinglePulseTimerExpired(tag)'. Also, it sets `AsymmetricSinglePulseTimerState(tag)` to `ASPT_STATE_LOW` and `AsymmetricSinglePulseTimerSemiperiod(tag)` to `false`. This macro disables the interrupts and enables them at the end. |
-| `ResetAsymmetricSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It clears `AsymmetricSinglePulseTimerState(tag)`, `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` and `AsymmetricSinglePulseTimerExpired(tag)'. Also, it sets `AsymmetricSinglePulseTimerState(tag)` to `ASPT_STATE_LOW` and `AsymmetricSinglePulseTimerSemiperiod(tag)` to `false`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
+| `StopAsymmetricSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It clears `AsymmetricSinglePulseTimerState(tag)`, `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` and `AsymmetricSinglePulseTimerExpired(tag)`. Also, it sets `AsymmetricSinglePulseTimerState(tag)` to `ASPT_STATE_LOW` and `AsymmetricSinglePulseTimerSemiperiod(tag)` to `false`. This macro disables the interrupts and enables them at the end. |
+| `ResetAsymmetricSinglePulseTimer(tag)` | This macro stops a timer with tag `tag`. It clears `AsymmetricSinglePulseTimerState(tag)`, `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` and `AsymmetricSinglePulseTimerExpired(tag)`. Also, it sets `AsymmetricSinglePulseTimerState(tag)` to `ASPT_STATE_LOW` and `AsymmetricSinglePulseTimerSemiperiod(tag)` to `false`. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
 | `ClearAsymmetricSinglePulseTimer(tag)` | This macro clears all variable of the timer. The macro does not touch the interrupts and thus it is convenient to be used with previously disabled interrupts. |
 | `TickAsymmetricSinglePulseTimer(tag)` | This macro decrements by one `AsymmetricSinglePulseTimerCounter(tag)`. When the counter becomes zero, the current semiriod is finished. If this was the first semiperiod, `AsymmetricSinglePulseTimerSemiperiodExpired(tag)` is raised and the counter is loaded it `AsymmetricSinglePulseTimerSettingSecond(tag)`.  If the second period has finised, then `AsymmetricSinglePulseTimerExpired(tag)` is raised and the timer is stopped by clearing `StopAsymmetricSinglePulseTimer(tag)`. |
+
+
+## Burst Generator
+
+The Burst generator produces bursts of impulses with following specification:
+
+     ------ pulses -----
+     +---+  +---+  +---+            +---+  +---+  +---+
+     |   |  |   |  |   |            |   |  |   |  |   |
+     |   |  |   |  |   |            |   |  |   |  |   |
+    -+   +--+   +--+   +------------+   +--+   +--+   +---------
+      ht  lt                 it
+    pulses - number of the pulses in a package
+    ht - high time
+    lt - low time
+    it - idle time between the packages
+
+The timer can be used to drive an output of a microcontroller or simply to change a variable holding the state. This timer is ideal for producing LED blinking with variuous number of light times.
+
+To avoid mistakes, always use a definition of the output pin instead of its name as macro argument in macro calls.
+
+### Declaration.
+
+| Macro | Description |
+| --- | --- |
+| `DEFINE_BURST_GENERATOR(tag,ttype)` | Declares a burst generator in **.c** file by decalring its variables. `tag` is the tag of the timer, and `ttype` is its type. |
+| `EXTERN_BURST_GENERATOR(tag,ttype)` | Define external definitions in **.h** file. `tag` is the tag of the timer, and `ttype` is its type. |
+
+### Variables.
+
+| Variable | Description |
+| --- | --- |
+| `BurstGeneratorCounter(tag)` | Counter of the timer. It is not good idea to access this avriable directly. |
+| `BurstGeneratorPulses(tag)` | Number of the pulses in a singel burst. |
+| `BurstGeneratorHighTime(tag)` | Length of the high state of the single impulse. |
+| `BurstGeneratorLowTime(tag)` | Length of the low state between two adjacent impulses in a burst. |
+| `BurstGeneratorIdleTime(tag)` | Length of the idle time between two bursts. |
+| `BurstGeneratorPulseCounter(tag)` | Pulse counter of the timer. Not intended for direct access. |
+| `BurstGeneratorState(tag)` | This variable holds the state of the timer output - `BG_STATE_LOW` or `BG_STATE_HIGH`.|
+| `BurstGeneratorFlag(tag)` | This flag, when `true`, indicates active, working timer. When `false` the flag indicates a stopped timer. |
+| `BurstGeneratorTick(tag)` | This flag is raised at every change `BurstGeneratorState(tag)`. It can be used by the application to do something or to manipulate some output pin. |
+
+### Manipulation macros.
+
+Burst generators have two sets of manipulation macros - without or with output. The first set manipulate the output variable `BurstGeneratorState(tag)` only. The second set is given an argument pointing output pin. These macros directly manipulate this output in addition to manipulating `BurstGeneratorState(tag)`. This way output bursts are more exact in time.
+
+Macros without output pin
+
+| Macro | Description |
+| --- | --- |
+| `SetBurstGenerator(tag,pulses,ht,lt,it)` | This macro starts a burst generator with tag `tag`. The arguments set values for `BurstGeneratorPulses(tag)`, `BurstGeneratorHighTime(tag)`, `BurstGeneratorLowTime(tag)` and `BurstGeneratorIdleTime(tag)`. `BurstGeneratorFlag(x)` is set and `BurstGeneratorTick(x)` cleared. `BurstGeneratorState(x)` is set to `BG_STATE_LOW` - it will become `BG_STATE_HIGH` when next `RTC_TICK` comes. The macro disables the interrupts and enables them at the end. |
+| `SetBurstGeneratorI(tag,pulses,ht,lt,it)` | This macro does the same as `SetBurstGenerator(tag,pulses,ht,lt,it)` but does not touch the interrupts. |
+| `ResetBurstGenerator(tag)` | This macro stops the timer by clearing `BurstGeneratorFlag(x)` and `BurstGeneratorTick(x)`. It also sets `BurstGeneratorState(x)` to `BG_STATE_LOW`. This macro does not touch the interrupts. |
+| `ClearBurstGenerator(tag)` | This macro clears all variables of the timer. It does not touch the interrupts. |
+| `StopBurstGenerator(tag)` | This macro stops the timer by clearing `BurstGeneratorFlag(x)` and `BurstGeneratorTick(x)`. It also sets `BurstGeneratorState(x)` to `BG_STATE_LOW`. The macro disables the interrupts and enables them at the end. |
+| `TickBurstGenerator(tag)` | This macro is called at every `RTC_TICK`. It decrements by one `BurstGeneratorCounter(tag`), manupulates the other variables and accordingly sets or clears `BurstGeneratorState(tag)`. |
+
+Macros with output pin
+
+| Macro | Description |
+| --- | --- |
+| `SetBurstGeneratorWithOutput(tag,pulses,ht,lt,it,out)` | This macros does the same as `SetBurstGenerator(tag,pulses,ht,lt,it)`. In addition, it clears the output `out`. |
+| `SetBurstGeneratorIWithOutput(tag,pulses,ht,lt,it,out)` | This macros does the same as `SetBurstGeneratorI(tag,pulses,ht,lt,it)`. In addition, it clears the output `out`. |
+| `ResetBurstGeneratorWithOutput(tag,out)` | This macros does the same as `ResetBurstGenerator(tag)`. In addition, it clears the output `out`. |
+| `ClearBurstGeneratorWithOutput(tag)` | This macros does the same as `ClearBurstGenerator(tag)`. In addition, it clears the output `out`. |
+| `StopBurstGeneratorWithOutput(tag,out)` | This macros does the same as `StopBurstGenerator(tag)`. In addition, it clears the output `out`. |
+| `TickBurstGeneratorWithOutput(tag,out)` | This macros does the same as `TickBurstGenerator(tag)`. In addition, it manipulates the output `out` accordingly to `BurstGeneratorState(tag)`. |
