@@ -1,4 +1,5 @@
 /* timedefs.h
+ * Author: Ivan Cenov, Bulgaria, i_cenov@botevgrad.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -632,6 +633,9 @@
 // | first  | second
 // +        +--------+
 
+#define ASPT_STATE_HIGH (highstate)
+#define ASPT_STATE_LOW  (lowstate)
+
 // variables
 #define AsymmetricSinglePulseTimerCounter(x) ASP_Counter_##x
 #define AsymmetricSinglePulseTimerSettingFirst(x) ASP_SettingFirst_##x
@@ -689,19 +693,33 @@
 #define SetAsymmetricSinglePulseTimerI(x,first,second,istate) { \
     ASP_SettingFirst_##x = (first); \
     ASP_SettingSecond_##x = (second); \
-    ASP_Counter_##x = (first); \
-    ASP_State_##x = istate; \
-    ASP_Flag_##x = true; \
-    ASP_sp_##x = false; \
-    ASP_SemiPeriod_Expired_##x = false; \
-    ASP_Expired_##x = false; \
+    if (first != 0u) { \
+        ASP_Counter_##x = (first); \
+        ASP_State_##x = istate; \
+        ASP_sp_##x = false; \
+        ASP_SemiPeriod_Expired_##x = false; \
+        ASP_Flag_##x = true; \
+        ASP_Expired_##x = false; \
+    } else if (second != 0u) { \
+        ASP_Counter_##x = (second); \
+        ASP_State_##x = !istate; \
+        ASP_sp_##x = true; \
+        ASP_SemiPeriod_Expired_##x = true; \
+        ASP_Flag_##x = true; \
+        ASP_Expired_##x = false; \
+    } else { \
+        ASP_sp_##x = false; \
+        ASP_Flag_##x = false; \
+        ASP_SemiPeriod_Expired_##x = false; \
+        ASP_Expired_##x = false; \
+    } \
 }
 // stop when interrupts are enabled
 #define StopAsymmetricSinglePulseTimer(x) { \
     DisableInterrupts(); \
     ASP_Flag_##x = false; \
     ASP_sp_##x = false; \
-    ASP_State_##x = ACT_STATE_LOW; \
+    ASP_State_##x = ASPT_STATE_LOW; \
     ASP_SemiPeriod_Expired_##x = false; \
     ASP_Expired_##x = false; \
     EnableInterrupts(); \
@@ -710,7 +728,7 @@
 #define ResetAsymmetricSinglePulseTimer(x) { \
     ASP_Flag_##x = false; \
     ASP_sp_##x = false; \
-    ASP_State_##x = ACT_STATE_LOW; \
+    ASP_State_##x = ASPT_STATE_LOW; \
     ASP_SemiPeriod_Expired_##x = false; \
     ASP_Expired_##x = false; \
 }
@@ -721,7 +739,7 @@
     ASP_SettingSecond_##x = 0u; \
     ASP_Flag_##x = false; \
     ASP_sp_##x = false; \
-    ASP_State_##x = false; \
+    ASP_State_##x = ASPT_STATE_LOW; \
     ASP_SemiPeriod_Expired_##x = false; \
     ASP_Expired_##x = false; \
 }
