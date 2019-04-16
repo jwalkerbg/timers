@@ -917,6 +917,19 @@
     BG_Flag_##x = false; \
     BG_Tick_##x = false; \
 }
+// clear timer
+#define ClearBurstGeneratorWithOutput(x) { \
+    BG_Counter_##x = 0u; \
+    BG_pulses_##x = 0u; \
+    BG_ht_##x = 0u; \
+    BG_lt_##x = 0u; \
+    BG_it_##x = 0u; \
+    BG_pc_##x = 0u; \
+    BG_state_##x = BG_STATE_LOW; \
+    BG_Flag_##x = false; \
+    BG_Tick_##x = false; \
+    out = lowstate; \
+}
 #define StopBurstGeneratorWithOutput(x,out) { \
     DisableInterrupts(); \
     out = lowstate; \
