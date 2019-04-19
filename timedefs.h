@@ -796,7 +796,7 @@
     extern ttype BG_lt_##x; \
     extern ttype BG_it_##x; \
     extern uint8_t BG_pc_##x; \
-    extern uint8_t BG_state_##x; \
+    extern B1 BG_state_##x; \
     extern B1 BG_Flag_##x; \
     extern B1 BG_Tick_##x;
 #define DEFINE_BURST_GENERATOR(x,ttype) ttype BG_Counter_##x; \
@@ -805,7 +805,7 @@
     ttype BG_lt_##x; \
     ttype BG_it_##x; \
     uint8_t BG_pc_##x; \
-    uint8_t BG_state_##x; \
+    B1 BG_state_##x; \
     B1 BG_Flag_##x; \
     B1 BG_Tick_##x;
 
